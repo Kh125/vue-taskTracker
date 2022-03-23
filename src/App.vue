@@ -1,82 +1,33 @@
 <template>
   <div class="container">    
-    <Header @toggle-add-task="toggleAddTask" title="Vue Task Tracker" :showAddTask="showAddTask"/>   
-    <div v-show="showAddTask">
-      <AddTask @add-task="addTask"/>
-    </div>
-    <Tasks @toggle-reminder="toggleReminder" @delete-task="deleteTask" :tasks="tasks" /> 
+    <Header @toggle-add-task="toggleAddTask" title="Vue Task Tracker" :showAddTask="showAddTask"/>       
+    <router-view :showAddTask="showAddTask"></router-view>
+    <Footer />
   </div>  
 </template>
 
 <script>
 import AddTask from './components/AddTask';
 import Header from './components/Header';
+import Footer from './components/Footer';
 import Tasks from './components/Tasks';
 
 export default {
   name: 'App',
-  components: {
-    AddTask,
-    Header,
-    Tasks,
+  components: {    
+    Header,     
+    Footer  
   },
   data(){
-    return{
-      tasks:[],
+    return{      
       showAddTask:false
     }
   },
-  methods:{
-    async deleteTask(id){
-      if(confirm('Are you sure?')) {
-        const res = await fetch(`http://localhost:5000/tasks/${id}`,{
-          method: 'DELETE'
-        })
-        res.status = 200 ? this.tasks = this.tasks.filter((task)=> task.id !== id) : alert('Connection Error')
-      }
-    },
-    async toggleReminder(id){
-      const toggleTask = await this.fetchTask(id);
-      const updateTask = {...toggleTask, reminder:!toggleTask.reminder}      
-
-      const res = await fetch(`http://localhost:5000/tasks/${id}`,{
-        method: 'PUT',
-        headers: {
-          'Content-type': 'Application/json'
-        },
-        body: JSON.stringify(updateTask)
-      })
-      const data = await res.json()
-      res.status === 200 ? this.tasks = this.tasks.map((task)=> task.id === id ? {...task, reminder: data.reminder} : task) : alert('Connection error')
-    },
-    async addTask(newTask){
-      const res = await fetch('http://localhost:5000/tasks', {
-        method: 'POST',
-        headers:{
-          'Content-type': 'application/json'
-        },
-        body: JSON.stringify(newTask)
-      })
-      const data = await res.json()
-      this.tasks = [...this.tasks, data]
-    },
+  methods:{    
     toggleAddTask(){
       this.showAddTask = !this.showAddTask
-    },
-    async fetchTasks(){
-      const result = await fetch('http://localhost:5000/tasks')
-      const data = await result.json()
-      return data
-    },
-    async fetchTask(id){
-      const result = await fetch(`http://localhost:5000/tasks/${id}`)
-      const data = await result.json()
-      return data
-    }
-  },
-  async created(){
-    this.tasks = await this.fetchTasks()
-  }
+    },    
+  },  
 }
 </script>
 
